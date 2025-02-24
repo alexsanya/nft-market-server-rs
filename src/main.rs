@@ -1,3 +1,11 @@
+use std::env;
+use tracing::info;
+
+mod settings;
+mod logger;
+
 fn main() {
-    println!("Hello, world!");
+    logger::setup();
+    info!("Hello, world!");
+    info!("{}", env::var("RUST_LOG").unwrap());
 }
