@@ -23,7 +23,7 @@ impl Patterns {
         }
     }
 
-    pub fn test_bytes32(self, text: &str) -> Result<&str, ()> {
+    pub fn test_bytes32<'a>(&self, text: &'a str) -> Result<&'a str, ()> {
         if self.bytes32.is_match(text) {
             Ok(text)
         } else {

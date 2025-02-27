@@ -1,8 +1,6 @@
 use serde::{Serialize, Deserialize};
-
 use crate::{models::listing::Listing, utils::patterns::Patterns};
-
-use super::signature::SignatureDTO;
+use super::signature::{self, SignatureDTO};
 
 #[derive(Debug)]
 pub enum ParsingError {
@@ -11,7 +9,7 @@ pub enum ParsingError {
     NftContract,
     TokenId,
     Nonce,
-    Signature
+    Signature(signature::ParsingError)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -38,7 +36,7 @@ impl TryInto<Listing> for ListingDTO {
             nft_contract: patterns.test_address(&self.nft_contract).map_err(|_| ParsingError::NftContract)?.to_owned(),
             token_id: self.token_id.parse().map_err(|_| ParsingError::TokenId)?,
             nonce: self.nonce.parse().map_err(|_| ParsingError::Nonce)?,
-            signature: self.signature.try_into().map_err(|_| ParsingError::Signature)?
+            signature: self.signature.try_into().map_err(ParsingError::Signature)?
         };
         Ok(listing)
     }
