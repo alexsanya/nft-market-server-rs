@@ -23,7 +23,6 @@ pub struct ListingDTO {
     pub signature: SignatureDTO
 }
 
-
 impl TryInto<Listing> for ListingDTO {
     type Error = ParsingError;
 
