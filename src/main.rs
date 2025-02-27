@@ -9,6 +9,7 @@ mod settings;
 mod logger;
 mod routes;
 mod models;
+mod utils;
 mod dtos;
 mod app;
 
