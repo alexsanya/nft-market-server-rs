@@ -1,4 +1,5 @@
 
+use tracing::debug;
 use axum::{Router, routing::post, Json};
 
 use crate::{dtos::listing::{ListingDTO, ParsingError}, models::listing::Listing};
@@ -8,14 +9,16 @@ pub fn create_route() -> Router {
 }
 
 async fn create(Json(payload): Json<ListingDTO>) {
-    print!("{:?}", payload);
+    debug!("{:?}", payload);
 
 
     let result: Result<Listing, ParsingError> = payload.try_into();
 
     if let Ok(listing) = result {
-        print!("{:?}", listing);
+        debug!("Success");
+        debug!("{:?}", listing);
     } else {
-        print!("{:?}", result.unwrap_err())
+        debug!("Error");
+        debug!("{:?}", result.unwrap_err());
     }
 }
