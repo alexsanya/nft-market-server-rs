@@ -12,7 +12,7 @@ pub async fn save_listing(listing: &Listing) -> Result<(), ()> {
     Ok(())
 }
 
-pub fn get_all() -> Result<Vec<String>, ()> {
+pub fn get_all() -> Result<Vec<Listing>, ()> {
     let storage = STORAGE.lock().unwrap();
-    Ok(storage.iter().map(|v| v.clone()).collect())
+    Ok(storage.iter().map(|v| serde_json::from_str(v).unwrap()).collect())
 }

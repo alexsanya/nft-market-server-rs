@@ -1,11 +1,9 @@
 use std::env;
 use std::net::SocketAddr;
-use app::create_app;
 use settings::SETTINGS;
 use tracing::info;
 use tokio::net::TcpListener;
 
-mod infrastructure;
 mod repositories;
 mod controllers;
 mod settings;

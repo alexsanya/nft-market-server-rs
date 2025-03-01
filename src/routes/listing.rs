@@ -23,6 +23,6 @@ async fn create(Json(payload): Json<ListingDTO>) {
     }
 }
 
-async fn get_all()-> Json<Vec<String>> {
+async fn get_all()-> Json<Vec<Listing>> {
     Json(get_listings())
 }
