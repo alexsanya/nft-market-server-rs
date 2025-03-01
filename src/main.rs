@@ -5,6 +5,7 @@ use settings::SETTINGS;
 use tracing::info;
 use tokio::net::TcpListener;
 
+mod infrastructure;
 mod repositories;
 mod controllers;
 mod settings;

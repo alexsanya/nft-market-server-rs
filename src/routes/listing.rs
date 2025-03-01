@@ -1,22 +1,28 @@
 
 use tracing::debug;
-use axum::{Router, routing::post, Json};
+use axum::{Router, routing::{get, post}, Json};
 
-use crate::{controllers::listing::create_listing, dtos::listing::{ListingDTO, ParsingError}, models::listing::Listing};
+use crate::{controllers::listing::{create_listing, get_listings}, dtos::listing::{ListingDTO, ParsingError}, models::listing::Listing};
 
 pub fn create_route() -> Router {
-    Router::new().route("/listings", post(create))
+    Router::new()
+        .route("/listings", post(create))
+        .route("/listings", get(get_all))
 }
 
 async fn create(Json(payload): Json<ListingDTO>) {
     let result: Result<Listing, ParsingError> = payload.try_into();
 
     if let Ok(listing) = result {
-        create_listing(&listing).unwrap();
+        create_listing(&listing).await.unwrap();
         debug!("Success");
         debug!("{:?}", listing);
     } else {
         debug!("Error");
         debug!("{:?}", result.unwrap_err());
     }
+}
+
+async fn get_all()-> Json<Vec<String>> {
+    Json(get_listings())
 }
