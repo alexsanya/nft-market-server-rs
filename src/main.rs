@@ -12,10 +12,14 @@ mod routes;
 mod models;
 mod utils;
 mod dtos;
+mod error;
+mod prelude;
 mod app;
 
+use crate::prelude::*;
+
 #[tokio::main]
-async fn main() -> Result<(), std::io::Error>{
+async fn main() -> Result<()>{
     logger::setup();
     let port = SETTINGS.server.port;
     let address = SocketAddr::from(([127, 0, 0, 1], port));
