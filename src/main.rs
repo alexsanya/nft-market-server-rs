@@ -23,10 +23,10 @@ async fn main() -> Result<()>{
     logger::setup();
     let port = SETTINGS.server.port;
     let address = SocketAddr::from(([127, 0, 0, 1], port));
-    let listener = TcpListener::bind(address).await?;
+    let listener = TcpListener::bind(address).await.unwrap();
     info!("Server listening on {}", address);
     let app = app::create_app().await;
-    axum::serve(listener,app).await?;
+    axum::serve(listener,app).await.unwrap();
 
     info!("Hello, world!");
     info!("{}", env::var("RUST_LOG").unwrap());
