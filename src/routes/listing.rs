@@ -1,7 +1,10 @@
 
+use axum::http::header::Entry;
 use tracing::debug;
+use crate::error::Entity;
 use crate::Result;
-use axum::{Router, routing::{get, post}, Json};
+use crate::Error;
+use axum::{routing::{get, post}, Json, Router};
 
 use crate::{controllers::listing::{create_listing, get_listings}, dtos::listing::{ListingDTO}, models::listing::Listing};
 
@@ -11,16 +14,18 @@ pub fn create_route() -> Router {
         .route("/listings", get(get_all))
 }
 
-async fn create(Json(payload): Json<ListingDTO>) {
+async fn create(Json(payload): Json<ListingDTO>) -> Result<()> {
     let result = payload.try_into();
 
     if let Ok(listing) = result {
-        create_listing(&listing).await.unwrap();
+        create_listing(&listing).await?;
         debug!("Success");
         debug!("{:?}", listing);
+        Ok(())
     } else {
         debug!("Error");
-        debug!("{:?}", result.unwrap_err());
+        let err = result.unwrap_err();
+        Err(Error::InvalidInput(Entity::Listing, err.as_ref().to_owned()))
     }
 }
 
