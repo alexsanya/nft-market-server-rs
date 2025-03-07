@@ -17,3 +17,5 @@ regex = "1.11.1"
 redis = { version = "0.29.0", features = ["tokio-comp"] }
 thiserror = "2.0.11"
 strum_macros = "0.27.1"
+ethers = "2.0.14"
+hex = "0.4.3"

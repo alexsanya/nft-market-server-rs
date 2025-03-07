@@ -1,12 +1,10 @@
-
-use axum::http::header::Entry;
 use tracing::debug;
 use crate::error::Entity;
 use crate::Result;
 use crate::Error;
 use axum::{routing::{get, post}, Json, Router};
 
-use crate::{controllers::listing::{create_listing, get_listings}, dtos::listing::{ListingDTO}, models::listing::Listing};
+use crate::{controllers::listing::{create_listing, get_listings}, dtos::listing::ListingDTO, models::listing::Listing};
 
 pub fn create_route() -> Router {
     Router::new()
