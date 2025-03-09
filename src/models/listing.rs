@@ -2,53 +2,51 @@ use num_bigint::BigInt;
 use crate::utils::hash::Hashable;
 use ethers::utils::keccak256;
 use ethers::abi::AbiEncode;
-use tracing::debug;
 use hex;
 
-use super::signature::Signature;
 use serde::{Serialize, Deserialize};
+use super::signature::Signature as SigString;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Listing {
     pub owner: String,
     pub chain_id: BigInt,
-    pub min_price_cents: u16,
+    pub min_price_cents: BigInt,
     pub nft_contract: String,
     pub token_id: BigInt,
     pub nonce: BigInt,
-    pub signature: Signature
+    pub signature: SigString
 }
 
 impl Hashable for Listing {
-    fn hash(&self, domain_separator: String) -> String {
+    fn hash(&self, domain_separator: String) -> [u8; 32] {
         let encoded_data = (
             keccak256(b"Listing(address nftContract,uint256 tokenId,uint256 minPriceCents,uint256 nonce)"),
             self.nft_contract.parse::<ethers::types::Address>().unwrap(),
             self.token_id.to_string().parse::<ethers::types::U256>().unwrap(),
-            hex::encode(self.min_price_cents.to_be_bytes()).parse::<ethers::types::U256>().unwrap(),
+            hex::encode(self.min_price_cents.to_signed_bytes_be()).parse::<ethers::types::U256>().unwrap(),
             self.nonce.to_string().parse::<ethers::types::U256>().unwrap()
         ).encode();
 
-        print!("hello hash: {}", hex::encode(keccak256(b"hello")));
-        print!("encoded_data: {}", hex::encode(&encoded_data));
-        print!("encoded_data hash: {:?}", hex::encode(keccak256(&encoded_data[..])));
 
-        //let hex_raw = (
-        //    ethers::types::Bytes::from(vec![0x19, 0x01]),
-        //    domain_separator.parse::<ethers::types::Bytes>().unwrap(),
-        //    ethers::types::Bytes::from(keccak256(encoded_data))
-        //).encode();
+        let prefix = [0x19, 0x01];
+        let result = [
+            &prefix[..],
+            &hex::decode(domain_separator).unwrap()[..],
+            &keccak256(&encoded_data)[..]
+        ].concat();
 
-        let prefix = vec![0x19, 0x01];
-        let result = [&prefix[..], &hex::decode(domain_separator).unwrap()[..], &keccak256(&encoded_data)[..]].concat();
-
-        print!("hex_raw: {}", hex::encode(&result));
-        hex::encode(keccak256(&result))
+        //print!("hex_raw: {}", hex::encode(&result));
+        keccak256(&result)
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+    use ethers::types::Signature;
+
+    use ethers::types::{Address, U256};
     use serde_json::json;
 
     use crate::dtos::listing::ListingDTO;
@@ -60,7 +58,7 @@ mod tests {
         let raw_listing = json!({
             "owner": "0x3897326cEda92B3da2c27a224D6fDCFefCaCf57A",
             "chain_id": "11155111",
-            "min_price_cents": 137,
+            "min_price_cents": "150000",
             "nft_contract": "0xf44b599a0aB6b8cb14E992994BEC0dc59dF883B2",
             "token_id": "1",
             "nonce": "0",
@@ -79,7 +77,18 @@ mod tests {
 
         let hash = listing.hash(DOMAIN_SEPARATOR);
 
-        assert_eq!(hash, "07e440212245f786b1ab066a629db7ef7b9e6f98b1ced217ed260b3d1e1a1fa3");
+        assert_eq!(hex::encode(hash), "a065e3992869424e8464212057e58769f949c06184d8f472d58b4827c0c8fe5d");
+
+        let r = U256::from_str(&listing.signature.r).unwrap();
+        let s = U256::from_str(&listing.signature.s).unwrap();
+        let signature = Signature{ r, s, v: listing.signature.v };
+        print!(" | Signature: {}", signature.to_string());
+        print!(" | hash: {:?}", hex::encode(&hash));
+
+        let address = signature.recover(hash).unwrap();
+        print!(" | Recovered address: {:?}", address);
+
+        assert_eq!(address, Address::from_str("0x1d86d9c913934c5e1908c882f9de0fe8433fee79").unwrap());
 
     }
 }

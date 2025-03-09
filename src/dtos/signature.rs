@@ -5,7 +5,7 @@ use crate::{models::signature::Signature, utils::patterns::Patterns};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SignatureDTO {
-    pub v: u8,
+    pub v: u64,
     pub r: String,
     pub s: String
 }
