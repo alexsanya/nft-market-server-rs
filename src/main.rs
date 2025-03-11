@@ -14,12 +14,15 @@ mod utils;
 mod dtos;
 mod error;
 mod prelude;
+mod services;
 mod app;
 
 use crate::prelude::*;
+use dotenv::dotenv;
 
 #[tokio::main]
 async fn main() -> Result<()>{
+    dotenv().ok();
     logger::setup();
     let port = SETTINGS.server.port;
     let address = SocketAddr::from(([127, 0, 0, 1], port));

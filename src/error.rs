@@ -15,6 +15,9 @@ pub enum Error {
 
     #[error("InvalidInput")]
     InvalidInput(Entity, String),
+
+    #[error("MissingNFT")]
+    MissingNFT
 }
 
 impl IntoResponse for Error {
@@ -29,6 +32,7 @@ impl Error {
     pub fn client_status_and_errors(&self) -> (StatusCode, ClientError, Option<String>) {
         match self {
             Self::InvalidInput(entity, field) => (StatusCode::BAD_REQUEST, ClientError::CLIENT_ERROR, Some(format!("{}.{}", entity.as_ref(), field))),
+            Self::MissingNFT => (StatusCode::BAD_REQUEST, ClientError::CLIENT_ERROR, Some("Owner doesnt posess NFT".to_owned())),
             _ => (StatusCode::INTERNAL_SERVER_ERROR, ClientError::SERVER_ERROR, None)
         }
     }
