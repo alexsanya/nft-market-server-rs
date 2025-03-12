@@ -11,13 +11,16 @@ pub enum Error {
     Generic(String),
 
     #[error("SaveData")]
-    SaveDataError,
+    SaveData,
 
     #[error("InvalidInput")]
     InvalidInput(Entity, String),
 
     #[error("MissingNFT")]
-    MissingNFT
+    MissingNFT,
+
+    #[error("InvalidSignature")]
+    InvalidSignature(Entity)
 }
 
 impl IntoResponse for Error {
@@ -33,6 +36,7 @@ impl Error {
         match self {
             Self::InvalidInput(entity, field) => (StatusCode::BAD_REQUEST, ClientError::CLIENT_ERROR, Some(format!("{}.{}", entity.as_ref(), field))),
             Self::MissingNFT => (StatusCode::BAD_REQUEST, ClientError::CLIENT_ERROR, Some("Owner doesnt posess NFT".to_owned())),
+            Self::InvalidSignature(entity) => (StatusCode::BAD_REQUEST, ClientError::CLIENT_ERROR, Some(format!("Invalid signature in {}", entity.as_ref()))),
             _ => (StatusCode::INTERNAL_SERVER_ERROR, ClientError::SERVER_ERROR, None)
         }
     }

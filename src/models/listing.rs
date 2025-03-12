@@ -1,8 +1,11 @@
-use ethers::types::U256;
+use ethers::types::{Signature, U256};
 use num_bigint::BigInt;
 use ethers::abi::Address;
 use std::str::FromStr;
 use serde::{Serialize, Deserialize};
+use crate::error::{Entity, Error};
+use crate::prelude::Result as MyResult;
+
 use super::listing_eip712::Listing as ListingEIP712;
 use super::signature::Signature as SigString;
 
@@ -15,6 +18,18 @@ pub struct Listing {
     pub token_id: BigInt,
     pub nonce: BigInt,
     pub signature: SigString
+}
+
+impl Listing {
+    pub fn verify_signature(&self) -> MyResult<()> {
+        let signature: Signature = self.signature.clone().try_into().map_err(|_| Error::InvalidSignature(Entity::Listing))?;
+        let owner_result = Address::from_str(&self.owner);
+        let listing_eip721: ListingEIP712 = self.clone().try_into().map_err(|_| Error::InvalidSignature(Entity::Listing))?;
+        match (signature.recover_typed_data(&listing_eip721), owner_result) {
+            (Ok(recovered), Ok(owner)) if recovered == owner => Ok(()),
+            _ => Err(Error::InvalidSignature(Entity::Listing))
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -43,12 +58,9 @@ impl TryInto<ListingEIP712> for Listing {
 mod tests {
     use std::str::FromStr;
     use ethers::types::Signature;
-
     use ethers::types::{Address, U256};
     use serde_json::json;
-
     use crate::dtos::listing::ListingDTO;
-
     use super::*;
 
     #[test]
@@ -67,25 +79,14 @@ mod tests {
             }
         });
 
-
         let listing_dto: ListingDTO = serde_json::from_value(raw_listing).unwrap();
-
         let listing: Listing = listing_dto.try_into().unwrap();
-
-
-
-
-        let r = U256::from_str(&listing.signature.r).unwrap();
-        let s = U256::from_str(&listing.signature.s).unwrap();
-        let signature = Signature{ r, s, v: listing.signature.v };
+        let signature: Signature = listing.signature.clone().try_into().expect("Cannot convert signature");
         println!("Signature: {}", signature);
-
 
         let listing_eip712: ListingEIP712 = listing.try_into().expect("Failed to convert listing into EIP712");
         println!("listing_eip721: {:?}", listing_eip712);
-        //listing_eip712.encode_eip712().expect("Error encoding into EIP712");
 
-        //let address = signature.recover(hash).unwrap();
         let address = signature.recover_typed_data(&listing_eip712).expect("Cannot recover typed data");
         println!("Recovered address: {:?}", address);
 
