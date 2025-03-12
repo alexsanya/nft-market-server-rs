@@ -1,4 +1,5 @@
 
+use ethers::contract::Eip712;
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

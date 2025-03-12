@@ -1,10 +1,9 @@
+use ethers::types::U256;
 use num_bigint::BigInt;
-use crate::utils::hash::Hashable;
-use ethers::utils::keccak256;
-use ethers::abi::AbiEncode;
-use hex;
-
+use ethers::abi::Address;
+use std::str::FromStr;
 use serde::{Serialize, Deserialize};
+use super::listing_eip712::Listing as ListingEIP712;
 use super::signature::Signature as SigString;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18,26 +17,25 @@ pub struct Listing {
     pub signature: SigString
 }
 
-impl Hashable for Listing {
-    fn hash(&self, domain_separator: String) -> [u8; 32] {
-        let encoded_data = (
-            keccak256(b"Listing(address nftContract,uint256 tokenId,uint256 minPriceCents,uint256 nonce)"),
-            self.nft_contract.parse::<ethers::types::Address>().unwrap(),
-            self.token_id.to_string().parse::<ethers::types::U256>().unwrap(),
-            hex::encode(self.min_price_cents.to_signed_bytes_be()).parse::<ethers::types::U256>().unwrap(),
-            self.nonce.to_string().parse::<ethers::types::U256>().unwrap()
-        ).encode();
+#[derive(Debug)]
+pub enum Eip712Error {
+    MinPrice,
+    NftContract,
+    TokenId,
+    Nonce
+}
 
+impl TryInto<ListingEIP712> for Listing {
+    type Error = Eip712Error;
 
-        let prefix = [0x19, 0x01];
-        let result = [
-            &prefix[..],
-            &hex::decode(domain_separator).unwrap()[..],
-            &keccak256(&encoded_data)[..]
-        ].concat();
-
-        //print!("hex_raw: {}", hex::encode(&result));
-        keccak256(&result)
+    fn try_into(self) -> Result<ListingEIP712, Self::Error> {
+        let listing_eip712 = ListingEIP712 {
+            min_price_cents: U256::from_dec_str(&self.min_price_cents.to_string()).map_err(|_| Eip712Error::MinPrice)?,
+            nft_contract: Address::from_str(&self.nft_contract).map_err(|_| Eip712Error::NftContract)?,
+            token_id: U256::from_dec_str(&self.token_id.to_string()).map_err(|_| Eip712Error::TokenId)?,
+            nonce: U256::from_dec_str(&self.nonce.to_string()).map_err(|_| Eip712Error::Nonce)?,
+        };
+        Ok(listing_eip712)
     }
 }
 
@@ -69,26 +67,29 @@ mod tests {
             }
         });
 
-        let DOMAIN_SEPARATOR = "47720df067349d6e15f380966605c432d4f59c1ad2d55501d9d8ea139c7244d9".to_owned();
 
         let listing_dto: ListingDTO = serde_json::from_value(raw_listing).unwrap();
 
         let listing: Listing = listing_dto.try_into().unwrap();
 
-        let hash = listing.hash(DOMAIN_SEPARATOR);
 
-        assert_eq!(hex::encode(hash), "a065e3992869424e8464212057e58769f949c06184d8f472d58b4827c0c8fe5d");
+
 
         let r = U256::from_str(&listing.signature.r).unwrap();
         let s = U256::from_str(&listing.signature.s).unwrap();
         let signature = Signature{ r, s, v: listing.signature.v };
-        print!(" | Signature: {}", signature.to_string());
-        print!(" | hash: {:?}", hex::encode(&hash));
+        println!("Signature: {}", signature);
 
-        let address = signature.recover(hash).unwrap();
-        print!(" | Recovered address: {:?}", address);
 
-        assert_eq!(address, Address::from_str("0x1d86d9c913934c5e1908c882f9de0fe8433fee79").unwrap());
+        let listing_eip712: ListingEIP712 = listing.try_into().expect("Failed to convert listing into EIP712");
+        println!("listing_eip721: {:?}", listing_eip712);
+        //listing_eip712.encode_eip712().expect("Error encoding into EIP712");
+
+        //let address = signature.recover(hash).unwrap();
+        let address = signature.recover_typed_data(&listing_eip712).expect("Cannot recover typed data");
+        println!("Recovered address: {:?}", address);
+
+        assert_eq!(address, Address::from_str("0x3897326ceda92b3da2c27a224d6fdcfefcacf57a").unwrap());
 
     }
 }
