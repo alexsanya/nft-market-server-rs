@@ -58,7 +58,7 @@ impl TryInto<ListingEIP712> for Listing {
 mod tests {
     use std::str::FromStr;
     use ethers::types::Signature;
-    use ethers::types::{Address, U256};
+    use ethers::types::Address;
     use serde_json::json;
     use crate::dtos::listing::ListingDTO;
     use super::*;
@@ -79,13 +79,14 @@ mod tests {
             }
         });
 
-        let listing_dto: ListingDTO = serde_json::from_value(raw_listing).unwrap();
-        let listing: Listing = listing_dto.try_into().unwrap();
+        let listing_dto: ListingDTO = serde_json::from_value(raw_listing).expect("Cannot convert json listing to ListingDTO");
+        let listing: Listing = listing_dto.try_into().expect("Cannot convert ListingDTp to Listing");
         let signature: Signature = listing.signature.clone().try_into().expect("Cannot convert signature");
         println!("Signature: {}", signature);
 
         let listing_eip712: ListingEIP712 = listing.try_into().expect("Failed to convert listing into EIP712");
         println!("listing_eip721: {:?}", listing_eip712);
+        //println!("EIP712 hash: {}", listing_eip712.encode_eip712().unwrap());
 
         let address = signature.recover_typed_data(&listing_eip712).expect("Cannot recover typed data");
         println!("Recovered address: {:?}", address);
