@@ -6,7 +6,7 @@ use super::signature::SignatureDTO;
 use super::listing::ParsingError as ParsingListingError;
 use super::signature::ParsingError as ParsingSignatureError;
 
-#[derive(Debug, strum_macros::AsRefStr)]
+#[derive(Debug, Clone, strum_macros::AsRefStr)]
 pub enum ParsingError {
     Bidder,
     TokenAddress,

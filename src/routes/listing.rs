@@ -1,3 +1,4 @@
+use tokio::sync::broadcast::error;
 use tracing::debug;
 use crate::error::Entity;
 use crate::Result;
@@ -21,8 +22,8 @@ async fn create(Json(payload): Json<ListingDTO>) -> Result<()> {
         debug!("{:?}", listing);
         Ok(())
     } else {
-        debug!("Error");
         let err = result.unwrap_err();
+        debug!("Error {:?}", err);
         Err(Error::InvalidInput(Entity::Listing, err.as_ref().to_owned()))
     }
 }
