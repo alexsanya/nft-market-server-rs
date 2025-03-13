@@ -37,7 +37,7 @@ impl TryInto<Bid> for BidDTO {
             token_address: patterns.test_address(&self.token_address).map_err(|_| ParsingError::TokenAddress)?.to_owned(),
             valid_until: self.valid_until.parse().map_err(|_| ParsingError::ValidUntil)?,
             value: self.value.parse().map_err(|_| ParsingError::Value)?,
-            siganture: self.signature.try_into().map_err(ParsingError::Signature)?
+            signature: self.signature.try_into().map_err(ParsingError::Signature)?
         };
         Ok(bid)
     }
