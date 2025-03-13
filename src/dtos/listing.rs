@@ -2,7 +2,7 @@ use serde::{Serialize, Deserialize};
 use crate::{models::listing::Listing, utils::patterns::Patterns};
 use super::signature::{self, SignatureDTO};
 
-#[derive(Debug, strum_macros::AsRefStr)]
+#[derive(Debug, Clone, strum_macros::AsRefStr)]
 pub enum ParsingError {
     Owner,
     ChainId,
