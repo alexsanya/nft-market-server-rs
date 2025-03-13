@@ -1,4 +1,4 @@
-use ethers::types::{Address, U256};
+use ethers::types::{Address, Signature, U256};
 use num_bigint::BigInt;
 use std::str::FromStr;
 use serde::{Deserialize, Serialize};
@@ -6,6 +6,8 @@ use super::signature::Signature as SigString;
 use super::bid_eip712::Bid as BidEIP712;
 use super::listing_eip712::Listing as ListingEIP712;
 use ethers::types::transaction::eip712::Eip712;
+use crate::error::{Entity, Error};
+use crate::prelude::Result as MyResult;
 use super::listing::Listing;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -41,6 +43,19 @@ impl TryInto<BidEIP712> for Bid {
     }
 }
 
+impl Bid {
+    pub fn verify_signature(&self) -> MyResult<()> {
+        let signature: Signature = self.signature.clone().try_into().map_err(|_| Error::InvalidSignature(Entity::Bid))?;
+        let bid_eip712: BidEIP712 = self.clone().try_into().map_err(|_| Error::InvalidSignature(Entity::Bid))?;
+        let recover_result = signature.recover_typed_data(&bid_eip712);
+        let bidder_result = Address::from_str(&self.bidder);
+        match (recover_result, bidder_result) {
+            (Ok(recovered), Ok(bidder)) if recovered == bidder => Ok(()),
+            _ => Err(Error::InvalidSignature(Entity::Bid))
+        }
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -60,5 +75,19 @@ mod tests {
         println!("Recovered address: {:?}", address);
         assert_eq!(address, Address::from_str(&bidder).unwrap());
 
+    }
+
+    #[test]
+    fn check_signature() {
+        let bid = get_bid();
+        bid.verify_signature().expect("Error");
+        let bid_incorrect_sig = Bid {
+            signature: SigString {
+                v: 29,
+                ..bid.signature
+            },
+            ..bid
+        };
+        assert!(matches!(bid_incorrect_sig.verify_signature(), Err(Error::InvalidSignature(Entity::Bid))));
     }
 }

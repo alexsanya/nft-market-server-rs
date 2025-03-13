@@ -79,4 +79,18 @@ mod tests {
         assert_eq!(address, Address::from_str("0x3897326ceda92b3da2c27a224d6fdcfefcacf57a").unwrap());
 
     }
+
+    #[test]
+    fn check_signature() {
+        let listing = get_listing();
+        listing.verify_signature().expect("Error");
+        let listing_incorrect_sig = Listing {
+            signature: SigString {
+                v: 29,
+                ..listing.signature
+            },
+            ..listing
+        };
+        assert!(matches!(listing_incorrect_sig.verify_signature(), Err(Error::InvalidSignature(Entity::Listing))));
+    }
 }
