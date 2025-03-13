@@ -59,34 +59,19 @@ mod tests {
     use std::str::FromStr;
     use ethers::types::Signature;
     use ethers::types::Address;
-    use serde_json::json;
-    use crate::dtos::listing::ListingDTO;
+    use ethers::types::transaction::eip712::Eip712;
+    use crate::models::samples::test::get_listing;
     use super::*;
 
     #[test]
     fn check_hash() {
-        let raw_listing = json!({
-            "owner": "0x3897326cEda92B3da2c27a224D6fDCFefCaCf57A",
-            "chain_id": "11155111",
-            "min_price_cents": "150000",
-            "nft_contract": "0xf44b599a0aB6b8cb14E992994BEC0dc59dF883B2",
-            "token_id": "1",
-            "nonce": "0",
-            "signature": {
-                "v": 28,
-                "r": "0x5ef4620f4b296763ff15209456d75e868f149a8d1c6821f1ff11fab70bca0ee0",
-                "s": "0x337ddcb26ea919a2bf5ad6e1d49bd6951a27d1d2e940a5543a70eabc5dbe237e"
-            }
-        });
-
-        let listing_dto: ListingDTO = serde_json::from_value(raw_listing).expect("Cannot convert json listing to ListingDTO");
-        let listing: Listing = listing_dto.try_into().expect("Cannot convert ListingDTp to Listing");
+        let listing: Listing = get_listing();
         let signature: Signature = listing.signature.clone().try_into().expect("Cannot convert signature");
         println!("Signature: {}", signature);
 
         let listing_eip712: ListingEIP712 = listing.try_into().expect("Failed to convert listing into EIP712");
         println!("listing_eip721: {:?}", listing_eip712);
-        //println!("EIP712 hash: {}", listing_eip712.encode_eip712().unwrap());
+        println!("EIP712 hash: {:?}", hex::encode(listing_eip712.encode_eip712().unwrap()));
 
         let address = signature.recover_typed_data(&listing_eip712).expect("Cannot recover typed data");
         println!("Recovered address: {:?}", address);

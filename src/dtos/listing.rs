@@ -41,3 +41,20 @@ impl TryInto<Listing> for ListingDTO {
         Ok(listing)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use insta::assert_debug_snapshot;
+
+    use crate::models::samples::test::get_raw_listing;
+
+    use super::*;
+
+    #[test]
+    fn convert() {
+        let raw_listing = get_raw_listing();
+        let listing_dto: ListingDTO = serde_json::from_value(raw_listing).expect("Cannot convert json to ListingDTO");
+        let listing: Listing = listing_dto.try_into().expect("Cannot convert ListingDTO to listing");
+        assert_debug_snapshot!(listing);
+    }
+}

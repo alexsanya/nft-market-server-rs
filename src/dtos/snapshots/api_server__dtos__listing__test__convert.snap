@@ -1,0 +1,18 @@
+---
+source: src/dtos/listing.rs
+expression: listing
+snapshot_kind: text
+---
+Listing {
+    owner: "0x3897326cEda92B3da2c27a224D6fDCFefCaCf57A",
+    chain_id: 11155111,
+    min_price_cents: 150000,
+    nft_contract: "0xf44b599a0aB6b8cb14E992994BEC0dc59dF883B2",
+    token_id: 1,
+    nonce: 0,
+    signature: Signature {
+        v: 28,
+        r: "0x5ef4620f4b296763ff15209456d75e868f149a8d1c6821f1ff11fab70bca0ee0",
+        s: "0x337ddcb26ea919a2bf5ad6e1d49bd6951a27d1d2e940a5543a70eabc5dbe237e",
+    },
+}
