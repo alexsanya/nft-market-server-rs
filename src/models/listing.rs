@@ -69,6 +69,7 @@ mod tests {
         let signature: Signature = listing.signature.clone().try_into().expect("Cannot convert signature");
         println!("Signature: {}", signature);
 
+        let owner = listing.owner.clone();
         let listing_eip712: ListingEIP712 = listing.try_into().expect("Failed to convert listing into EIP712");
         println!("listing_eip721: {:?}", listing_eip712);
         println!("EIP712 hash: {:?}", hex::encode(listing_eip712.encode_eip712().unwrap()));
@@ -76,7 +77,7 @@ mod tests {
         let address = signature.recover_typed_data(&listing_eip712).expect("Cannot recover typed data");
         println!("Recovered address: {:?}", address);
 
-        assert_eq!(address, Address::from_str("0x3897326ceda92b3da2c27a224d6fdcfefcacf57a").unwrap());
+        assert_eq!(address, Address::from_str(&owner).unwrap());
 
     }
 

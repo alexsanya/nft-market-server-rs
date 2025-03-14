@@ -45,6 +45,7 @@ impl TryInto<BidEIP712> for Bid {
 
 impl Bid {
     pub fn verify_signature(&self) -> MyResult<()> {
+        self.listing.verify_signature()?;
         let signature: Signature = self.signature.clone().try_into().map_err(|_| Error::InvalidSignature(Entity::Bid))?;
         let bid_eip712: BidEIP712 = self.clone().try_into().map_err(|_| Error::InvalidSignature(Entity::Bid))?;
         let recover_result = signature.recover_typed_data(&bid_eip712);
@@ -78,9 +79,30 @@ mod tests {
     }
 
     #[test]
-    fn check_signature() {
+    fn check_signature_ok() {
         let bid = get_bid();
         bid.verify_signature().expect("Error");
+    }
+
+    #[test]
+    fn check_listing_sig_incorrect() {
+        let bid = get_bid();
+        let bid_incorrect_sig = Bid {
+            listing: Listing {
+                signature: SigString {
+                    v: 29,
+                    ..bid.signature.clone()
+                },
+                ..bid.listing
+            },
+            ..bid
+        };
+        assert!(matches!(bid_incorrect_sig.verify_signature(), Err(Error::InvalidSignature(Entity::Listing))));
+    }
+
+    #[test]
+    fn check_bid_sig_incorrect() {
+        let bid = get_bid();
         let bid_incorrect_sig = Bid {
             signature: SigString {
                 v: 29,
