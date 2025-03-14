@@ -20,6 +20,12 @@ abigen!(
     event_derives(serde::Deserialize, serde::Serialize)
 );
 
+abigen!(
+    ERC20Contract,
+    "./erc20_abi.json",
+    event_derives(serde::Deserialize, serde::Serialize)
+);
+
 fn setup_client() -> Arc<SignerMiddleware<Provider<Http>, Wallet<SigningKey>>> {
     dotenv().ok();
     let private_key = env::var("PRIVATE_KEY").expect("PRIVATE_KEY not set");
@@ -31,17 +37,34 @@ fn setup_client() -> Arc<SignerMiddleware<Provider<Http>, Wallet<SigningKey>>> {
 
 pub async fn check_owner_has_nft(owner: &str, collection: &str, token_id: &BigInt) -> Result<()> {
     let client = CLIENT.clone();
-    let erc721 = NftContract::new(Address::from_str(collection).unwrap(), client);
-    let name = erc721.name().call().await;
-    debug!("Token name: {}", name.unwrap());
-    let token_id = U256::from_dec_str(&token_id.to_string()).unwrap();
+    let contract_address = Address::from_str(collection).map_err(|_| Error::MissingNFT)?;
+    let erc721 = NftContract::new(contract_address, client);
+    let name = erc721.name().call().await.map_err(|_| Error::MissingNFT)?;
+    debug!("NFT token name: {}", name);
+    let token_id = U256::from_dec_str(&token_id.to_string()).map_err(|_| Error::MissingNFT)?;
     debug!("tokenId: {}", token_id.to_string());
-    let value = erc721.owner_of(token_id).call().await.map_err(|_| Error::Generic("Failed call".to_owned()))?;
+    let value = erc721.owner_of(token_id).call().await.map_err(|_| Error::Generic("Failed call to provider".to_owned()))?;
     debug!("NFT is owned by {}", value);
-    if Address::from_str(owner).unwrap() == value {
+    let owner_address = Address::from_str(owner).map_err(|_| Error::MissingNFT)?;
+    if owner_address == value {
         Ok(())
     } else {
         Err(Error::MissingNFT)
     }
 }
 
+pub async fn check_bidder_has_tokens(bidder: &str, contract: &str, value: &BigInt) -> Result<()> {
+    let client = CLIENT.clone();
+    let contract_address = Address::from_str(contract).map_err(|_| Error::MissingTokens)?;
+    let bidder_address = Address::from_str(bidder).map_err(|_| Error::MissingTokens)?;
+    let erc20 =  ERC20Contract::new(contract_address, client);
+    let name = erc20.name().call().await.map_err(|_| Error::MissingTokens)?;
+    debug!("ERC20 token name: {}", name);
+    let bidder_balance = erc20.balance_of(bidder_address).call().await.map_err(|_| Error::Generic("Failed call to provider".to_owned()))?;
+    debug!("Bidder balance: {}", bidder_balance);
+    if bidder_balance >= U256::from_dec_str(&value.to_string()).map_err(|_| Error::MissingTokens)? {
+        Ok(())
+    } else {
+        Err(Error::MissingTokens)
+    }
+}
