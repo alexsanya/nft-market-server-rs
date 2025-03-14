@@ -35,7 +35,7 @@ fn setup_client() -> Arc<SignerMiddleware<Provider<Http>, Wallet<SigningKey>>> {
     Arc::new(SignerMiddleware::new(provider, wallet))
 }
 
-pub async fn check_owner_has_nft(owner: &str, collection: &str, token_id: &BigInt) -> Result<()> {
+pub async fn ensure_owner_has_nft(owner: &str, collection: &str, token_id: &BigInt) -> Result<()> {
     let client = CLIENT.clone();
     let contract_address = Address::from_str(collection).map_err(|_| Error::MissingNFT)?;
     let erc721 = NftContract::new(contract_address, client);
@@ -53,7 +53,7 @@ pub async fn check_owner_has_nft(owner: &str, collection: &str, token_id: &BigIn
     }
 }
 
-pub async fn check_bidder_has_tokens(bidder: &str, contract: &str, value: &BigInt) -> Result<()> {
+pub async fn ensure_bidder_has_tokens(bidder: &str, contract: &str, value: &BigInt) -> Result<()> {
     let client = CLIENT.clone();
     let contract_address = Address::from_str(contract).map_err(|_| Error::MissingTokens)?;
     let bidder_address = Address::from_str(bidder).map_err(|_| Error::MissingTokens)?;
