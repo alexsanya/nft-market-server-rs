@@ -35,9 +35,9 @@ fn setup_client() -> Arc<SignerMiddleware<Provider<Http>, Wallet<SigningKey>>> {
     Arc::new(SignerMiddleware::new(provider, wallet))
 }
 
-pub async fn check_owner_has_nft(owner: &str, collection: &str, token_id: &BigInt) -> Result<()> {
+pub async fn ensure_owner_has_nft(owner: String, collection: String, token_id: BigInt) -> Result<()> {
     let client = CLIENT.clone();
-    let contract_address = Address::from_str(collection).map_err(|_| Error::MissingNFT)?;
+    let contract_address = Address::from_str(&collection).map_err(|_| Error::MissingNFT)?;
     let erc721 = NftContract::new(contract_address, client);
     let name = erc721.name().call().await.map_err(|_| Error::MissingNFT)?;
     debug!("NFT token name: {}", name);
@@ -45,7 +45,7 @@ pub async fn check_owner_has_nft(owner: &str, collection: &str, token_id: &BigIn
     debug!("tokenId: {}", token_id.to_string());
     let value = erc721.owner_of(token_id).call().await.map_err(|_| Error::Generic("Failed call to provider".to_owned()))?;
     debug!("NFT is owned by {}", value);
-    let owner_address = Address::from_str(owner).map_err(|_| Error::MissingNFT)?;
+    let owner_address = Address::from_str(&owner).map_err(|_| Error::MissingNFT)?;
     if owner_address == value {
         Ok(())
     } else {
@@ -53,10 +53,10 @@ pub async fn check_owner_has_nft(owner: &str, collection: &str, token_id: &BigIn
     }
 }
 
-pub async fn check_bidder_has_tokens(bidder: &str, contract: &str, value: &BigInt) -> Result<()> {
+pub async fn ensure_bidder_has_tokens(bidder: String, contract: String, value: BigInt) -> Result<()> {
     let client = CLIENT.clone();
-    let contract_address = Address::from_str(contract).map_err(|_| Error::MissingTokens)?;
-    let bidder_address = Address::from_str(bidder).map_err(|_| Error::MissingTokens)?;
+    let contract_address = Address::from_str(&contract).map_err(|_| Error::MissingTokens)?;
+    let bidder_address = Address::from_str(&bidder).map_err(|_| Error::MissingTokens)?;
     let erc20 =  ERC20Contract::new(contract_address, client);
     let name = erc20.name().call().await.map_err(|_| Error::MissingTokens)?;
     debug!("ERC20 token name: {}", name);
