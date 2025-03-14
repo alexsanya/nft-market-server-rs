@@ -14,6 +14,9 @@ pub enum Error {
     #[error("SaveData")]
     SaveData,
 
+    #[error("FetchData")]
+    FetchData,
+
     #[error("InvalidInput")]
     InvalidInput(Entity, String),
 
