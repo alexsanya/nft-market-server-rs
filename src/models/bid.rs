@@ -55,6 +55,12 @@ impl Bid {
             _ => Err(Error::InvalidSignature(Entity::Bid))
         }
     }
+
+    pub fn get_hash(&self) -> MyResult<String> {
+        let bid_eip712: BidEIP712 = self.clone().try_into().map_err(|_| Error::InvalidSignature(Entity::Bid))?;
+        let hash = bid_eip712.encode_eip712().map_err(|_| Error::InvalidSignature(Entity::Bid))?;
+        Ok(hex::encode(hash))
+    }
 }
 
 

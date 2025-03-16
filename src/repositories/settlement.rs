@@ -1,13 +1,15 @@
 use serde_json;
 use std::sync::Mutex;
+use crate::datasource::set_value;
 use crate::models::settlement::Settlement;
 use crate::prelude::*;
 
 static STORAGE: Mutex<Vec<String>> = Mutex::new(Vec::new());
 
 pub async fn save_settlement(settlement: &Settlement) -> Result<()> {
-    let mut storage = STORAGE.lock().map_err(|_| Error::SaveData)?;
-    storage.push(serde_json::to_string(settlement).unwrap());
+    let key = format!("settlements:{}", &settlement.bid.get_hash()?);
+    let value = serde_json::to_string(settlement).map_err(|_| Error::SaveData)?;
+    set_value(&key, &value).await?;
     Ok(())
 }
 

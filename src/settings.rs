@@ -14,6 +14,11 @@ pub struct Server {
 }
 
 #[derive(Clone)]
+pub struct Redis {
+    pub url: String,
+}
+
+#[derive(Clone)]
 pub struct ChainData {
     pub broker_address: String,
     pub private_key: String,
@@ -24,6 +29,7 @@ pub struct ChainData {
 pub struct Settings {
     pub logger: Logger,
     pub server: Server,
+    pub redis: Redis,
     pub chain_data: ChainData
 }
 
@@ -41,6 +47,7 @@ impl Settings {
             Settings {
                 logger: Logger{ level: "DEBUG".to_owned() },
                 server: Server { port: env::var("PORT").expect("PORT is not defined").parse().unwrap() },
+                redis: Redis { url: env::var("REDIS_URL").expect("REDIS_URL is not set") },
                 chain_data
             }
         )

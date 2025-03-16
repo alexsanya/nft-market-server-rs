@@ -15,6 +15,7 @@ mod dtos;
 mod error;
 mod prelude;
 mod services;
+mod datasource;
 mod app;
 
 use crate::prelude::*;
