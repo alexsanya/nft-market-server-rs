@@ -3,7 +3,8 @@ use axum::{http::StatusCode, response::{Response, IntoResponse}};
 #[derive(Clone, Debug, strum_macros::AsRefStr)]
 pub enum Entity {
     Listing,
-    Bid
+    Bid,
+    Settlement
 }
 
 #[derive(thiserror::Error, Clone, Debug)]

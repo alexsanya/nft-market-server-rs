@@ -1,10 +1,8 @@
 #[cfg(test)]
 pub mod test {
-    use std::os::macos::raw;
-
     use serde_json::{json, Value};
 
-    use crate::{dtos::{bid::BidDTO, listing::ListingDTO}, models::{bid::Bid, listing::Listing}};
+    use crate::{dtos::{bid::BidDTO, listing::ListingDTO, settlement::SettlementDTO}, models::{bid::Bid, listing::Listing, settlement::Settlement}};
 
     pub fn get_raw_listing() -> Value {
         let raw_listing = json!({
@@ -48,6 +46,27 @@ pub mod test {
     pub fn get_bid() -> Bid {
         let raw_bid = get_raw_bid();
         let bid_dto: BidDTO = serde_json::from_value(raw_bid).expect("Cannot convert json to BidDTO");
-        bid_dto.try_into().expect("Cannot convert BidBTo to bid")
+        bid_dto.try_into().expect("Cannot convert BidBTO to bid")
+    }
+
+    pub fn get_raw_settlement() -> Value {
+        let raw_listing = get_raw_listing();
+        let raw_bid = get_raw_bid();
+        let raw_settlement = json!({
+            "listing": raw_listing,
+            "bid": raw_bid,
+            "signature": {
+                "v": 27,
+                "r": "0xc21f88f00f01849ecbe4bcb75bd8f6cc2ac1f3507498e385b78df7db5f5ae334",
+                "s": "0x6adc46861e9888247b6b4f55cd7eb73449d835c94a0c3fd5e2df1b8cb6f77c4c"
+            }
+        });
+        raw_settlement
+    }
+
+    pub fn get_settlement() -> Settlement {
+        let raw_settlement = get_raw_settlement();
+        let settlement_dto: SettlementDTO = serde_json::from_value(raw_settlement).expect("Cannot convert json to SettlementDTO");
+        settlement_dto.try_into().expect("Cannot convert SettlementDTO to settlement")
     }
 }
