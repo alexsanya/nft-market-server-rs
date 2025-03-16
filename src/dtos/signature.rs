@@ -10,7 +10,7 @@ pub struct SignatureDTO {
     pub s: String
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, strum_macros::AsRefStr)]
 pub enum ParsingError {
     RisInvalid,
     SisInvalid

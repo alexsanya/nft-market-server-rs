@@ -7,6 +7,7 @@ pub async fn create_app() -> Router {
         .merge(crate::routes::status::create_route())
         .merge(crate::routes::listing::create_route())
         .merge(crate::routes::bid::create_route())
+        .merge(crate::routes::settlement::create_route())
         .layer(middleware::map_response(map_response_mapper))
 }
 

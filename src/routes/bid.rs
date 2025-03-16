@@ -20,7 +20,7 @@ async fn create(Json(payload): Json<BidDTO>) -> Result<()> {
         let err = result.unwrap_err();
         debug!("Error {:?}", err);
         if let ParsingError::Listing(listing_err) = err.clone() {
-            Err(Error::InvalidInput(Entity::Bid, format!("{}.{}", err.as_ref(), listing_err.as_ref())))
+            Err(Error::InvalidInput(Entity::Listing, format!("{}.{}", err.as_ref(), listing_err.as_ref())))
         } else {
             Err(Error::InvalidInput(Entity::Bid, err.as_ref().to_owned()))
         }

@@ -1,14 +1,12 @@
 use serde::{Deserialize, Serialize};
 use crate::models::settlement::Settlement;
-use crate::dtos::listing::ParsingError as ListingParsingError;
 use crate::dtos::bid::ParsingError as BidParsingError;
 use crate::dtos::signature::ParsingError as SigParsingError;
 
-use super::{bid::BidDTO, listing::ListingDTO, signature::SignatureDTO};
+use super::{bid::BidDTO, signature::SignatureDTO};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SettlementDTO {
-    pub listing: ListingDTO,
     pub bid: BidDTO,
     pub signature: SignatureDTO
 }
@@ -16,7 +14,6 @@ pub struct SettlementDTO {
 
 #[derive(Debug, Clone, strum_macros::AsRefStr)]
 pub enum ParsingError {
-    Listing(ListingParsingError),
     Bid(BidParsingError),
     Signature(SigParsingError)
 }
@@ -26,7 +23,6 @@ impl TryInto<Settlement> for SettlementDTO {
 
     fn try_into(self) -> Result<Settlement, Self::Error> {
         Ok(Settlement {
-            listing: self.listing.try_into().map_err(ParsingError::Listing)?,
             bid: self.bid.try_into().map_err(ParsingError::Bid)?,
             signature: self.signature.try_into().map_err(ParsingError::Signature)?
         })
