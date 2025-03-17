@@ -39,4 +39,17 @@ mod test {
         let settlement = get_settlement();
         settlement.verify_signature().expect("Error");
     }
+
+    #[test]
+    fn check_sig_incorrect() {
+        let settlement = get_settlement();
+        let settlement_incorrect_sig = Settlement {
+            signature: SigString {
+                v: 29,
+                ..settlement.signature
+            },
+            ..settlement
+        };
+        assert!(matches!(settlement_incorrect_sig.verify_signature(), Err(Error::InvalidSignature(Entity::Settlement))));
+    }
 }
