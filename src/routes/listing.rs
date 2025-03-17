@@ -1,4 +1,3 @@
-use tokio::sync::broadcast::error;
 use tracing::debug;
 use crate::error::Entity;
 use crate::Result;

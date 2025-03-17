@@ -1,7 +1,7 @@
 use once_cell::sync::Lazy;
 use redis::{aio::Connection, AsyncCommands};
 use tokio::sync::RwLock;
-use futures::{future::{join_all, try_join_all}, StreamExt};
+use futures::{future::try_join_all, StreamExt};
 use tracing::debug;
 use crate::{error::Error, prelude::Result, settings::SETTINGS};
 
