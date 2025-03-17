@@ -17,6 +17,6 @@ pub async fn create_bid(bid: &Bid) -> Result<()> {
     Ok(())
 }
 
-pub fn get_bids() -> Result<Vec<Bid>> {
-    get_all()
+pub async fn get_bids() -> Result<Vec<Bid>> {
+    get_all().await
 }

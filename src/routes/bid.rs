@@ -28,6 +28,6 @@ async fn create(Json(payload): Json<BidDTO>) -> Result<()> {
 }
 
 async fn get_all()-> Result<Json<Vec<Bid>>> {
-    let bids = get_bids()?;
+    let bids = get_bids().await?;
     Ok(Json(bids))
 }
