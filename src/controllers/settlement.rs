@@ -17,6 +17,6 @@ pub async fn create_settlement(settlement: &Settlement) -> Result<()> {
     Ok(())
 }
 
-pub fn get_settlements() -> Result<Vec<Settlement>> {
-    get_all()
+pub async fn get_settlements() -> Result<Vec<Settlement>> {
+    get_all().await
 }

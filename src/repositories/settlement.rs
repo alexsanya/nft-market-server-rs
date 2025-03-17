@@ -1,19 +1,32 @@
 use serde_json;
-use std::sync::Mutex;
-use crate::datasource::set_value;
+use tracing::debug;
+use crate::datasource::{set_value, get_all as fetch};
+use crate::dtos::settlement::SettlementDTO;
+use crate::error::Error;
 use crate::models::settlement::Settlement;
-use crate::prelude::*;
+use crate::prelude::Result as MyResult;
 
-static STORAGE: Mutex<Vec<String>> = Mutex::new(Vec::new());
-
-pub async fn save_settlement(settlement: &Settlement) -> Result<()> {
+pub async fn save_settlement(settlement: &Settlement) -> MyResult<()> {
     let key = format!("settlements:{}", &settlement.bid.get_hash()?);
     let value = serde_json::to_string(settlement).map_err(|_| Error::SaveData)?;
     set_value(&key, &value).await?;
     Ok(())
 }
 
-pub fn get_all() -> Result<Vec<Settlement>> {
-    let storage = STORAGE.lock().map_err(|_| Error::FetchData)?;
-    Ok(storage.iter().map(|v| serde_json::from_str(v).unwrap()).collect())
+pub async fn get_all() -> MyResult<Vec<Settlement>> {
+    let values = fetch("settlements:*").await?;
+    let settlements: Vec<Settlement> = values.iter().filter_map(|value| {
+        let settlement_dto: Result<SettlementDTO, _> = serde_json::from_str(value);
+        debug!("SettlementDTO: {:?}", settlement_dto);
+        if let Ok(settlement_dto) = settlement_dto {
+            let settlement: Result<Settlement, _> = settlement_dto.try_into();
+            match settlement {
+                Ok(settlement) => Some(settlement),
+                _ => None
+            }
+        } else {
+            None
+        }
+    }).collect();
+    Ok(settlements)
 }

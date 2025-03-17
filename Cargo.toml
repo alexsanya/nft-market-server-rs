@@ -21,6 +21,7 @@ ethers = "2.0.14"
 hex = "0.4.3"
 dotenv = "0.15.0"
 cargo-insta = "1.42.2"
+futures = "0.3.31"
 
 [dev-dependencies]
 insta = { version = "1.42.2", features = ["yaml"] }

@@ -1,5 +1,6 @@
 use std::env;
 use std::net::SocketAddr;
+use datasource::init_redis;
 use settings::SETTINGS;
 use tracing::info;
 use tokio::net::TcpListener;
@@ -25,6 +26,7 @@ use dotenv::dotenv;
 async fn main() -> Result<()>{
     dotenv().ok();
     logger::setup();
+    init_redis().await;
     let port = SETTINGS.server.port;
     let address = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = TcpListener::bind(address).await.unwrap();

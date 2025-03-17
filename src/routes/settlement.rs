@@ -37,6 +37,6 @@ async fn create(Json(payload): Json<SettlementDTO>) -> Result<()> {
 }
 
 async fn get_all()-> Result<Json<Vec<Settlement>>> {
-    let settlements = get_settlements()?;
+    let settlements = get_settlements().await?;
     Ok(Json(settlements))
 }
