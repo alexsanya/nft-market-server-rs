@@ -1,18 +1,19 @@
 use once_cell::sync::Lazy;
-use redis::{aio::Connection, AsyncCommands};
+use redis::{aio::MultiplexedConnection, AsyncCommands};
 use tokio::sync::RwLock;
 use futures::{future::try_join_all, StreamExt};
 use tracing::debug;
 use crate::{error::Error, prelude::Result, settings::SETTINGS};
 
-static REDIS_CONNECTION: Lazy<RwLock<Option<Connection>>> = Lazy::new(|| RwLock::new(None));
+static REDIS_CONNECTION: Lazy<RwLock<Option<MultiplexedConnection>>> = Lazy::new(|| RwLock::new(None));
 
 pub async fn init_redis() {
     let settings = SETTINGS.clone();
     let client = redis::Client::open(settings.redis.url)
         .expect("Cannot connect to redis");
+    debug!("Connectiong to Redis...");
     let con = client
-        .get_async_connection()
+        .get_multiplexed_async_connection()
         .await
         .expect("Cannot connect to redis");
     let mut connection = REDIS_CONNECTION.write().await;
