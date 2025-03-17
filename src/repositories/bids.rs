@@ -1,13 +1,10 @@
 use serde_json;
 use tracing::debug;
-use std::sync::Mutex;
 use crate::datasource::{set_value, get_all as fetch};
 use crate::dtos::bid::BidDTO;
 use crate::error::Error;
 use crate::models::bid::Bid;
 use crate::prelude::Result as MyResult;
-
-static STORAGE: Mutex<Vec<String>> = Mutex::new(Vec::new());
 
 pub async fn save_bid(bid: &Bid) -> MyResult<()> {
     let key = format!("bids:{}", &bid.get_hash()?);

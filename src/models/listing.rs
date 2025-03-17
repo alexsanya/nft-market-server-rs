@@ -5,6 +5,7 @@ use std::str::FromStr;
 use serde::{Serialize, Deserialize};
 use crate::error::{Entity, Error};
 use crate::prelude::Result as MyResult;
+use ethers::types::transaction::eip712::Eip712;
 use crate::utils::serialization::serialize_bigint_as_string;
 
 use super::listing_eip712::Listing as ListingEIP712;
@@ -35,6 +36,12 @@ impl Listing {
             (Ok(recovered), Ok(owner)) if recovered == owner => Ok(()),
             _ => Err(Error::InvalidSignature(Entity::Listing))
         }
+    }
+
+    pub fn get_hash(&self) -> MyResult<String> {
+        let listing_eip712: ListingEIP712 = self.clone().try_into().map_err(|_| Error::InvalidSignature(Entity::Listing))?;
+        let hash = listing_eip712.encode_eip712().map_err(|_| Error::InvalidSignature(Entity::Listing))?;
+        Ok(hex::encode(hash))
     }
 }
 

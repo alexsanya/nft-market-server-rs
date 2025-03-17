@@ -14,6 +14,6 @@ pub async fn create_listing(listing: &Listing) -> Result<()> {
     Ok(())
 }
 
-pub fn get_listings() -> Result<Vec<Listing>> {
-    get_all()
+pub async fn get_listings() -> Result<Vec<Listing>> {
+    get_all().await
 }

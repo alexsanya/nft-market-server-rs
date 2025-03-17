@@ -29,6 +29,6 @@ async fn create(Json(payload): Json<ListingDTO>) -> Result<()> {
 }
 
 async fn get_all()-> Result<Json<Vec<Listing>>> {
-    let listings = get_listings()?;
+    let listings = get_listings().await?;
     Ok(Json(listings))
 }
