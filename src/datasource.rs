@@ -26,7 +26,7 @@ pub async fn set_value(key: &str, value: &str) -> Result<()> {
         connection.set(key, value).await.map_err(|_| Error::FetchData)?;
         Ok(())
     } else {
-        panic!("Redis is not initialized");
+        Err(Error::SaveData)
     }
 }
 
