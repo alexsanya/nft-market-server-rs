@@ -1,2 +1,2 @@
-pub mod hash;
+pub mod serialization;
 pub mod patterns;

@@ -9,6 +9,7 @@ use crate::prelude::Result as MyResult;
 pub async fn save_settlement(settlement: &Settlement) -> MyResult<()> {
     let key = format!("settlements:{}", &settlement.bid.get_hash()?);
     let value = serde_json::to_string(settlement).map_err(|_| Error::SaveData)?;
+    debug!("Serrialized settlement: {}", value);
     set_value(&key, &value).await?;
     Ok(())
 }
@@ -19,8 +20,7 @@ pub async fn get_all() -> MyResult<Vec<Settlement>> {
         let settlement_dto: Result<SettlementDTO, _> = serde_json::from_str(value);
         debug!("SettlementDTO: {:?}", settlement_dto);
         if let Ok(settlement_dto) = settlement_dto {
-            let settlement: Result<Settlement, _> = settlement_dto.try_into();
-            match settlement {
+            match settlement_dto.try_into() {
                 Ok(settlement) => Some(settlement),
                 _ => None
             }

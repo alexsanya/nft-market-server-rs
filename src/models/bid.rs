@@ -9,13 +9,16 @@ use ethers::types::transaction::eip712::Eip712;
 use crate::error::{Entity, Error};
 use crate::prelude::Result as MyResult;
 use super::listing::Listing;
+use crate::utils::serialization::serialize_bigint_as_string;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Bid {
     pub bidder: String,
     pub listing: Listing,
     pub token_address: String,
+    #[serde(serialize_with = "serialize_bigint_as_string")]
     pub valid_until: BigInt,
+    #[serde(serialize_with = "serialize_bigint_as_string")]
     pub value: BigInt,
     pub signature: SigString
 }

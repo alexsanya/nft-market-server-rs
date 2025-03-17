@@ -5,6 +5,7 @@ use std::str::FromStr;
 use serde::{Serialize, Deserialize};
 use crate::error::{Entity, Error};
 use crate::prelude::Result as MyResult;
+use crate::utils::serialization::serialize_bigint_as_string;
 
 use super::listing_eip712::Listing as ListingEIP712;
 use super::signature::Signature as SigString;
@@ -12,13 +13,18 @@ use super::signature::Signature as SigString;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Listing {
     pub owner: String,
+    #[serde(serialize_with = "serialize_bigint_as_string")]
     pub chain_id: BigInt,
+    #[serde(serialize_with = "serialize_bigint_as_string")]
     pub min_price_cents: BigInt,
     pub nft_contract: String,
+    #[serde(serialize_with = "serialize_bigint_as_string")]
     pub token_id: BigInt,
+    #[serde(serialize_with = "serialize_bigint_as_string")]
     pub nonce: BigInt,
     pub signature: SigString
 }
+
 
 impl Listing {
     pub fn verify_signature(&self) -> MyResult<()> {
