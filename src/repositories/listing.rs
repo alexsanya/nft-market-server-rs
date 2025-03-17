@@ -17,7 +17,7 @@ pub async fn save_listing(listing: &Listing) -> MyResult<()> {
 pub async fn get_all() -> MyResult<Vec<Listing>> {
     let values = fetch("listings:*").await?;
     let listings = values.iter().filter_map(|value| {
-        let listing_dto: Result<ListingDTO, _> = serde_json::from_str(&value);
+        let listing_dto: Result<ListingDTO, _> = serde_json::from_str(value);
         if let Ok(listing_dto) = listing_dto {
             match listing_dto.try_into() {
                 Ok(listing) => Some(listing),
