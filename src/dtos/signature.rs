@@ -3,7 +3,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::{models::signature::Signature, utils::patterns::Patterns};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SignatureDTO {
     pub v: u64,
     pub r: String,

@@ -27,6 +27,11 @@ pub mod test {
         listing_dto.try_into().expect("Cannot convert ListingDTO to Listing")
     }
 
+    pub fn get_listing_dto() -> ListingDTO {
+        let raw_listing = get_raw_listing();
+        serde_json::from_value(raw_listing).expect("Cannot convert json to ListingDTO")
+    }
+
     pub fn get_raw_bid() -> Value {
         let raw_bid = json!({
             "bidder": "0xE98D94496aB9084f597a69978b593EBf83147335",

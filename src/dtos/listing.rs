@@ -13,7 +13,7 @@ pub enum ParsingError {
     Signature(signature::ParsingError)
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ListingDTO {
     pub owner: String,
     pub chain_id: String,

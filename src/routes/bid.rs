@@ -1,5 +1,5 @@
 use tracing::debug;
-use axum::{routing::{get, post}, Json, Router};
+use axum::{http::StatusCode, response::IntoResponse, routing::{get, post}, Json, Router};
 use crate::{controllers::bid::{create_bid, get_bids}, dtos::bid::{BidDTO, ParsingError}, error::{Entity, Error}, models::bid::Bid, prelude::Result};
 
 pub fn create_route() -> Router {
@@ -8,14 +8,14 @@ pub fn create_route() -> Router {
         .route("/bids", get(get_all))
 }
 
-async fn create(Json(payload): Json<BidDTO>) -> Result<()> {
+async fn create(Json(payload): Json<BidDTO>) -> Result<impl IntoResponse> {
     let result = payload.try_into();
 
     if let Ok(bid) = result {
         create_bid(&bid).await?;
         debug!("Success");
         debug!("{:?}", bid);
-        Ok(())
+        Ok(StatusCode::CREATED)
     } else {
         let err = result.unwrap_err();
         debug!("Error {:?}", err);

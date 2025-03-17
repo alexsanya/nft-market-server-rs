@@ -1,5 +1,5 @@
 use tracing::debug;
-use axum::{routing::{get, post}, Json, Router};
+use axum::{http::StatusCode, response::IntoResponse, routing::{get, post}, Json, Router};
 use crate::{controllers::settlement::{create_settlement, get_settlements}, dtos::settlement::{ParsingError, SettlementDTO}, error::{Entity, Error}, models::settlement::Settlement, prelude::Result};
 
 pub fn create_route() -> Router {
@@ -8,14 +8,14 @@ pub fn create_route() -> Router {
         .route("/settlements", get(get_all))
 }
 
-async fn create(Json(payload): Json<SettlementDTO>) -> Result<()> {
+async fn create(Json(payload): Json<SettlementDTO>) -> Result<impl IntoResponse> {
     let result = payload.try_into();
 
     if let Ok(settlement) = result {
         create_settlement(&settlement).await?;
         debug!("Success");
         debug!("{:?}", settlement);
-        Ok(())
+        Ok(StatusCode::CREATED)
     } else {
         let err = result.unwrap_err();
         debug!("Error {:?}", err);

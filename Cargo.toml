@@ -25,3 +25,7 @@ futures = "0.3.31"
 
 [dev-dependencies]
 insta = { version = "1.42.2", features = ["yaml"] }
+tower = "0.5.2"
+
+[features]
+integration_test = []

@@ -1,3 +1,5 @@
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use tracing::debug;
 use crate::dtos::listing::ParsingError;
 use crate::error::Entity;
@@ -13,14 +15,14 @@ pub fn create_route() -> Router {
         .route("/listings", get(get_all))
 }
 
-async fn create(Json(payload): Json<ListingDTO>) -> Result<()> {
+async fn create(Json(payload): Json<ListingDTO>) -> Result<impl IntoResponse> {
     let result = payload.try_into();
 
     if let Ok(listing) = result {
         create_listing(&listing).await?;
         debug!("Success");
         debug!("{:?}", listing);
-        Ok(())
+        Ok(StatusCode::CREATED)
     } else {
         let err = result.unwrap_err();
         debug!("Error {:?}", err);

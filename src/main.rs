@@ -22,6 +22,9 @@ mod app;
 use crate::prelude::*;
 use dotenv::dotenv;
 
+#[cfg(test)]
+mod integration_tests;
+
 #[tokio::main]
 async fn main() -> Result<()>{
     dotenv().ok();
