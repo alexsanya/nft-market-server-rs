@@ -1,4 +1,5 @@
 use tracing::debug;
+use crate::dtos::listing::ParsingError;
 use crate::error::Entity;
 use crate::Result;
 use crate::Error;
@@ -23,7 +24,20 @@ async fn create(Json(payload): Json<ListingDTO>) -> Result<()> {
     } else {
         let err = result.unwrap_err();
         debug!("Error {:?}", err);
-        Err(Error::InvalidInput(Entity::Listing, err.as_ref().to_owned()))
+        match &err {
+            ParsingError::Signature(signature_err) => Err(
+                Error::InvalidInput(
+                    Entity::Listing,
+                    format!("{}.{}", err.as_ref(), signature_err.as_ref())
+                )
+            ),
+            _ => Err(
+                Error::InvalidInput(
+                    Entity::Listing,
+                    err.as_ref().to_owned()
+                )
+            )
+        }
     }
 }
 

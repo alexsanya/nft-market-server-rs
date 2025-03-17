@@ -19,10 +19,25 @@ async fn create(Json(payload): Json<BidDTO>) -> Result<()> {
     } else {
         let err = result.unwrap_err();
         debug!("Error {:?}", err);
-        if let ParsingError::Listing(listing_err) = err.clone() {
-            Err(Error::InvalidInput(Entity::Listing, format!("{}.{}", err.as_ref(), listing_err.as_ref())))
-        } else {
-            Err(Error::InvalidInput(Entity::Bid, err.as_ref().to_owned()))
+        match &err {
+            ParsingError::Listing(listing_err) => Err(
+                Error::InvalidInput(
+                    Entity::Listing,
+                    format!("{}.{}", err.as_ref(), listing_err.as_ref())
+                )
+            ),
+            ParsingError::Signature(sig_err) => Err(
+                Error::InvalidInput(
+                    Entity::Bid,
+                    format!("{}.{}", err.as_ref(), sig_err.as_ref())
+                )
+            ),
+            _ => Err(
+                Error::InvalidInput(
+                    Entity::Bid,
+                    err.as_ref().to_owned()
+                )
+            )
         }
     }
 }
