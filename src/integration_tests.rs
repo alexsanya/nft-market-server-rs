@@ -1,9 +1,27 @@
-use axum::{body::{self, Body}, http::{header::CONTENT_TYPE, Method, Request, StatusCode}};
+use axum::{body::{self, Body}, http::{header::CONTENT_TYPE, Method, Request, StatusCode}, middleware};
 use dotenv::dotenv;
-use serde::de::DeserializeOwned;
+use serde::{de::DeserializeOwned, Deserialize};
 use tower::Service;
-use crate::{datasource::init_redis, dtos::listing::ListingDTO, models::samples::test::{get_listing_dto, get_raw_listing}, routes::listing::create_route};
+use crate::{app::map_response_mapper, datasource::init_redis, dtos::{listing::ListingDTO, signature::SignatureDTO}, models::samples::test::{get_listing_dto, get_raw_listing}, routes::listing::create_route};
 
+impl From<ListingDTO> for Request<Body> {
+    fn from(listing_dto: ListingDTO) -> Request<Body> {
+        let listing_str = serde_json::to_string(&listing_dto).unwrap();
+        let body = body::Body::from(listing_str);
+        Request::builder()
+            .method(Method::POST)
+            .uri("/listings")
+            .header(CONTENT_TYPE, "application/json")
+            .body(body)
+            .expect("Failed to construct create listings request")
+    }
+}
+
+#[derive(Deserialize)]
+struct ClientError {
+    description: String,
+    error: String
+}
 
 fn create_listing_request() -> Request<Body> {
     let body_str = get_raw_listing().to_string();
@@ -43,8 +61,11 @@ async fn create_listing_success() {
     dotenv().ok();
     // logger::setup();
     init_redis().await;
-    let mut router = create_route();
-    let response = router.call(create_listing_request()).await.unwrap();
+    let mut router = create_route()
+        .layer(middleware::map_response(map_response_mapper));
+    let listing_dto = get_listing_dto();
+    let create_listing_request: Request<Body> = listing_dto.into();
+    let response = router.call(create_listing_request).await.unwrap();
     let (res_parts, _) = response.into_parts();
     assert_eq!(StatusCode::CREATED, res_parts.status);
     let response = router.call(get_listings_request()).await.unwrap();
@@ -52,4 +73,29 @@ async fn create_listing_success() {
     assert_eq!(StatusCode::OK, res_parts.status);
     let listings_list: Vec<ListingDTO> = deserialize_body(res_body).await;
     assert_eq!(listings_list[0], get_listing_dto());
+}
+
+#[tokio::test]
+#[cfg_attr(not(feature = "integration_test"), ignore)]
+async fn create_listing_wrong_signature() {
+    dotenv().ok();
+    // logger::setup();
+    init_redis().await;
+    let mut router = create_route()
+        .layer(middleware::map_response(map_response_mapper));
+    let original_dto = get_listing_dto();
+    let listing_dto = ListingDTO {
+        signature: SignatureDTO {
+            v: original_dto.signature.v + 1,
+            ..original_dto.signature
+        },
+        ..original_dto
+    };
+    let create_listing_request: Request<Body> = listing_dto.into();
+    let response = router.call(create_listing_request).await.unwrap();
+    let (res_parts, res_body) = response.into_parts();
+    assert_eq!(StatusCode::BAD_REQUEST, res_parts.status);
+    let client_error: ClientError = deserialize_body(res_body).await;
+    assert_eq!(client_error.description, "Invalid signature in Listing");
+    assert_eq!(client_error.error, "CLIENT_ERROR");
 }

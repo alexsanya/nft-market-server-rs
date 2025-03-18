@@ -11,7 +11,7 @@ pub async fn create_app() -> Router {
         .layer(middleware::map_response(map_response_mapper))
 }
 
-async fn map_response_mapper(res: Response) -> Response {
+pub async fn map_response_mapper(res: Response) -> Response {
     let error = res.extensions().get::<Error>();
 
     if let Some(error) = error {
