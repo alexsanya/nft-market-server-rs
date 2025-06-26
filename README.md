@@ -8,7 +8,7 @@ Backend API for NFT Marketplace project
 ## Screencast demo
 https://youtu.be/pM4YEwt0nHc [unlisted and availible only by derect link]
 
-## Deployment:w
+## Deployment
 API available by root URL: http://3.86.155.38:8080/api/v1
 
 ## Endpoints
